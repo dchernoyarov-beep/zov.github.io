@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Кликер в Telegram</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .score {
+            font-size: 3rem;
+            font-weight: bold;
+            margin-bottom: 30px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .click-button {
+            background: #ff6b6b;
+            border: none;
+            color: white;
+            padding: 30px 60px;
+            font-size: 2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+            transition: all 0.2s;
+            outline: none;
+        }
+        
+        .click-button:active {
+            transform: scale(0.95);
+            box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+        }
+        
+        .stats {
+            margin-top: 30px;
+            font-size: 1.2rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="score" id="score">0</div>
+    <button class="click-button" id="clickButton">КЛИК!</button>
+    <div class="stats">
+        <p>Всего кликов: <span id="totalClicks">0</span></p>
+        <p>Кликов в секунду: <span id="clicksPerSecond">0</span></p>
+    </div>
+
+    <script>
+        // Инициализация Telegram Web App
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        
+        // Элементы интерфейса
+        const scoreElement = document.getElementById('score');
+        const clickButton = document.getElementById('clickButton');
+        const totalClicksElement = document.getElementById('totalClicks');
+        const clicksPerSecondElement = document.getElementById('clicksPerSecond');
+        
+        // Игровые переменные
+        let score = 0;
+        let totalClicks = 0;
+        let clicksPerSecond = 0;
+        
+        // Обновление интерфейса
+        function updateUI() {
+            scoreElement.textContent = score;
+            totalClicksElement.textContent = totalClicks;
+            clicksPerSecondElement.textContent = clicksPerSecond;
+        }
+        
+        // Обработка клика
+        clickButton.addEventListener('click', function() {
+            score++;
+            totalClicks++;
+            updateUI();
+            
+            // Анимация клика
+            clickButton.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                clickButton.style.transform = 'scale(1)';
+            }, 100);
+        });
+        
+        // Автокликер (клики в секунду)
+        setInterval(function() {
+            if (clicksPerSecond > 0) {
+                score += clicksPerSecond;
+                updateUI();
+            }
+        }, 1000);
+        
+        // Сохранение прогресса
+        function saveProgress() {
+            const progress = {
+                score: score,
+                totalClicks: totalClicks,
+                clicksPerSecond: clicksPerSecond,
+                lastSave: Date.now()
+            };
+            localStorage.setItem('clickerGameProgress', JSON.stringify(progress));
+        }
+        
+        // Загрузка прогресса
+        function loadProgress() {
+            const saved = localStorage.getItem('clickerGameProgress');
+            if (saved) {
+                const progress = JSON.parse(saved);
+                score = progress.score;
+                totalClicks = progress.totalClicks;
+                clicksPerSecond = progress.clicksPerSecond;
+                updateUI();
+            }
+        }
+        
+        // Автосохранение каждые 10 секунд
+        setInterval(saveProgress, 10000);
+        
+        // Загрузка при старте
+        loadProgress();
+        updateUI();
+    </script>
+</body>
+</html>
